@@ -7,12 +7,11 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.io.Serializable;
-import java.util.UUID;
 
 
 @Entity(name = "USERS")
 @Data
-public class User implements Serializable {
+public class UserEntity implements Serializable {
     public static final long serialVersionUID = 1L;
 
     @Id
@@ -25,11 +24,11 @@ public class User implements Serializable {
     @Column(name = "LAST_NAME" ,nullable = false, length = 50)
     private String lastName;
 
-    @Column(name = "EMAIL_ID", nullable = false,length = 130,unique = true)
+    @Column(name = "EMAIL_ID", nullable = false,length = 130, unique = true)
     private String emailId;
 
-    @Column(name = "USER_ID", nullable = false,unique = true)
-    private UUID userId;
+    @Column(name = "USER_ID", nullable = false, unique = true)
+    private String userId;
 
     @Column(name = "PASSWORD",nullable = false)
     private String encryptedPassword;

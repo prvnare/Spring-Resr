@@ -6,7 +6,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
-import java.util.UUID;
 
 @Data
 @Builder
@@ -20,7 +19,7 @@ public class UserDTO implements Serializable {
     private String lastName;
     private String emailId;
     private String password;
-    private UUID userId;
+    private String userId;
     private String encryptedPassword;
     private String emailVerificationToken;
     private Boolean emailVerificationStatus = false ;
