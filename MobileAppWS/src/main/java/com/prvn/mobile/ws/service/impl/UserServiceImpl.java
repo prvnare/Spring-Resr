@@ -19,52 +19,50 @@ import java.util.Objects;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    RandomStringGeneratorUtility generatorUtility;
+  @Autowired RandomStringGeneratorUtility generatorUtility;
 
-    @Autowired
-    BCryptPasswordEncoder passwordEncoder;
+  @Autowired BCryptPasswordEncoder passwordEncoder;
 
-    UserRepository userRepository;
+  UserRepository userRepository;
 
-    public UserServiceImpl( UserRepository userRepository){
-        this.userRepository = userRepository;
+  public UserServiceImpl(UserRepository userRepository) {
+    this.userRepository = userRepository;
+  }
+
+  @Override
+  public UserDTO createUser(UserDTO userDTO) {
+    // Check if User is Existed with the same Email ID :
+    UserEntity existingUserEntityByEmailId = userRepository.findByEmailId(userDTO.getEmailId());
+    if (existingUserEntityByEmailId != null) {
+      throw new RuntimeException("User is already existed with the same email Id");
     }
+    UserEntity userEntity = new UserEntity();
+    BeanUtils.copyProperties(userDTO, userEntity);
 
-    @Override
-    public UserDTO createUser(UserDTO userDTO) {
-        //Check if User is Existed with the same Email ID :
-        UserEntity existingUserEntityByEmailId = userRepository.findByEmailId(userDTO.getEmailId());
-        if(existingUserEntityByEmailId !=null){
-           throw new RuntimeException("User is already existed with the same email Id");
-        }
-        UserEntity userEntity = new UserEntity();
-        BeanUtils.copyProperties(userDTO, userEntity);
+    userEntity.setEncryptedPassword(passwordEncoder.encode(userDTO.getPassword()));
+    userEntity.setUserId(generatorUtility.generateUserId(30));
+    UserEntity savedUserEntity = userRepository.save(userEntity);
+    BeanUtils.copyProperties(savedUserEntity, userDTO);
+    return userDTO;
+  }
 
-        userEntity.setEncryptedPassword(passwordEncoder.encode(userDTO.getPassword()));
-        userEntity.setUserId(generatorUtility.generateUserId(30));
-        UserEntity savedUserEntity = userRepository.save(userEntity);
-        BeanUtils.copyProperties(savedUserEntity,userDTO);
-        return userDTO;
+  @Override
+  public UserDTO getUser(String emailId) {
+    UserEntity userEntity = userRepository.findByEmailId(emailId);
+    if (Objects.isNull(userEntity)) {
+      throw new UsernameNotFoundException(emailId);
     }
+    UserDTO userDTO = new UserDTO();
+    BeanUtils.copyProperties(userEntity, userDTO);
+    return userDTO;
+  }
 
-    @Override
-    public UserDTO getUser(String emailId) {
-        UserEntity  userEntity = userRepository.findByEmailId(emailId);
-        if(Objects.isNull(userEntity)){
-            throw new UsernameNotFoundException(emailId);
-        }
-        UserDTO userDTO = new UserDTO();
-        BeanUtils.copyProperties(userEntity,userDTO);
-        return userDTO;
+  @Override
+  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    UserEntity byEmailId = userRepository.findByEmailId(email);
+    if (Objects.isNull(byEmailId)) {
+      throw new UsernameNotFoundException(email);
     }
-
-    @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        UserEntity byEmailId = userRepository.findByEmailId(email);
-        if(Objects.isNull(byEmailId)){
-            throw new UsernameNotFoundException(email);
-        }
-        return  new User(byEmailId.getEmailId(), byEmailId.getEncryptedPassword(), new ArrayList<>());
-    }
+    return new User(byEmailId.getEmailId(), byEmailId.getEncryptedPassword(), new ArrayList<>());
+  }
 }

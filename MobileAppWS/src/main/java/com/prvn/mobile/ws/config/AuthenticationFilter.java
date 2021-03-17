@@ -16,44 +16,47 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
-    private AuthenticationManager authenticationManager ;
+  private final AuthenticationManager authenticationManager;
 
-    public AuthenticationFilter(AuthenticationManager authenticationManager){
-        this.authenticationManager = authenticationManager;
-    }
+  public AuthenticationFilter(AuthenticationManager authenticationManager) {
+    this.authenticationManager = authenticationManager;
+  }
 
-    @SneakyThrows
-    @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        UserLoginRequest user = new ObjectMapper().readValue(request.getInputStream(), UserLoginRequest.class);
-        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                user.getEmailId(),
-                user.getPassword(),
-                new ArrayList<>()
-        ));
-        return authenticate;
-    }
+  @SneakyThrows
+  @Override
+  public Authentication attemptAuthentication(
+      HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    UserLoginRequest user =
+        new ObjectMapper().readValue(request.getInputStream(), UserLoginRequest.class);
+    return authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+            user.getEmailId(), user.getPassword(), new ArrayList<>()));
+  }
 
-    @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication auth) throws IOException, ServletException {
-        String username = ((User) auth.getPrincipal()).getUsername();
+  @Override
+  protected void successfulAuthentication(
+      HttpServletRequest request,
+      HttpServletResponse response,
+      FilterChain chain,
+      Authentication auth) {
+    String username = ((User) auth.getPrincipal()).getUsername();
 
-        String token = Jwts.builder()
-                .setSubject(username)
-                .setExpiration(new Date(System.currentTimeMillis() + SecurityConst.EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS512, SecurityConst.SECRET_CODE)
-                .compact();
-        UserService userService = (UserService) SpringApplicationContextAware.getBean(UserServiceImpl.class);
-        response.addHeader(SecurityConst.TOKEN_AUTH_HEADER , SecurityConst.TOKEN_BEARER + token );
-        response.addHeader("UserId" , userService.getUser(username).getUserId());
-    }
+    String token =
+        Jwts.builder()
+            .setSubject(username)
+            .setExpiration(new Date(System.currentTimeMillis() + SecurityConst.EXPIRATION_TIME))
+            .signWith(SignatureAlgorithm.HS512, SecurityConst.SECRET_CODE)
+            .compact();
+    UserService userService =
+        (UserService) SpringApplicationContextAware.getBean(UserServiceImpl.class);
+    response.addHeader(SecurityConst.TOKEN_AUTH_HEADER, SecurityConst.TOKEN_BEARER + token);
+    response.addHeader("UserId", userService.getUser(username).getUserId());
+  }
 }

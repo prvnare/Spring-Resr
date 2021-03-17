@@ -13,31 +13,29 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/users")
 public class UserController {
 
-    private UserService userService;
+  private UserService userService;
 
-    public  UserController(UserService userService){
-        this.userService = userService;
-    }
+  public UserController(UserService userService) {
+    this.userService = userService;
+  }
 
-    @GetMapping
-    public ResponseEntity<String> getUsers(){
-        return ResponseEntity
-                .ok()
-                .headers(httpHeaders -> httpHeaders.add("content-type", MediaType.APPLICATION_JSON_VALUE))
-                .body("User Details");
-    }
+  @GetMapping
+  public ResponseEntity<String> getUsers() {
+    return ResponseEntity.ok()
+        .headers(httpHeaders -> httpHeaders.add("content-type", MediaType.APPLICATION_JSON_VALUE))
+        .body("User Details");
+  }
 
-    @PostMapping
-    public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest){
-        System.out.println(userRequest);
-        UserDTO userDTO = new UserDTO();
-        UserResponse userResponse = new UserResponse();
-        //copy
-        BeanUtils.copyProperties(userRequest,userDTO);
-        UserDTO user = userService.createUser(userDTO);
-        //copy
-        BeanUtils.copyProperties(user,userResponse);
-        return ResponseEntity.ok().body(userResponse);
-    }
+  @PostMapping
+  public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
+    System.out.println(userRequest);
+    UserDTO userDTO = new UserDTO();
+    UserResponse userResponse = new UserResponse();
+    // copy
+    BeanUtils.copyProperties(userRequest, userDTO);
+    UserDTO user = userService.createUser(userDTO);
+    // copy
+    BeanUtils.copyProperties(user, userResponse);
+    return ResponseEntity.ok().body(userResponse);
+  }
 }
-
