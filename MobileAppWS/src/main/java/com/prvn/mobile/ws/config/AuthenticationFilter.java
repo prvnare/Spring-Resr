@@ -3,6 +3,8 @@ package com.prvn.mobile.ws.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.prvn.mobile.ws.constants.SecurityConst;
 import com.prvn.mobile.ws.model.request.UserLoginRequest;
+import com.prvn.mobile.ws.service.UserService;
+import com.prvn.mobile.ws.service.impl.UserServiceImpl;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.SneakyThrows;
@@ -34,7 +36,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         UserLoginRequest user = new ObjectMapper().readValue(request.getInputStream(), UserLoginRequest.class);
         Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
-                user.getEmail(),
+                user.getEmailId(),
                 user.getPassword(),
                 new ArrayList<>()
         ));
@@ -50,7 +52,8 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                 .setExpiration(new Date(System.currentTimeMillis() + SecurityConst.EXPIRATION_TIME))
                 .signWith(SignatureAlgorithm.HS512, SecurityConst.SECRET_CODE)
                 .compact();
-
+        UserService userService = (UserService) SpringApplicationContextAware.getBean(UserServiceImpl.class);
         response.addHeader(SecurityConst.TOKEN_AUTH_HEADER , SecurityConst.TOKEN_BEARER + token );
+        response.addHeader("UserId" , userService.getUser(username).getUserId());
     }
 }
