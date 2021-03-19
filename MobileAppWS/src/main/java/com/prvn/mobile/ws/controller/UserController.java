@@ -28,7 +28,6 @@ public class UserController {
 
   @PostMapping
   public ResponseEntity<UserResponse> createUser(@RequestBody UserRequest userRequest) {
-    System.out.println(userRequest);
     UserDTO userDTO = new UserDTO();
     UserResponse userResponse = new UserResponse();
     // copy
